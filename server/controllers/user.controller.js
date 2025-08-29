@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import verifyEmailtemplate from "../utils/verifyEmailTemplate.js";
 import generateAccessToken from "../utils/generateAccessToken.js";
 import generateRefressToken from "../utils/generateRefressToken.js";
+import uploadImageCloudinary from "../utils/uploadImageCloudinary.js";
 
 // Register user controller starts here
 export async function registerUserController(req, res){
@@ -172,7 +173,8 @@ export async function loginController(req, res){
 // Logout controller starts here
 export async function logoutController(req, res){
     try {
-
+        const userId= req.userId; // this userId coming from auth middleware
+    
         const cookiesOption={
             httpOnly:true,
             secure:true,
@@ -181,6 +183,9 @@ export async function logoutController(req, res){
         res.clearCookie("accessToken", cookiesOption)
         res.clearCookie("refreshToken", cookiesOption)
 
+        const removeRefressToken = await UserModel.findByIdAndUpdate(userId,{
+            refresh_token:""
+        })
         return res.status(200).json({
             message:"Logout successful",
             error:false,
@@ -194,3 +199,38 @@ export async function logoutController(req, res){
         })
     }
 }
+// Logout controller ends here
+
+//Cloudinary image upload controller starts here
+export async function uploadAvatar(req, res){
+    try {
+        const image = req.file;
+        const userId = req.userId;
+        const upload = await uploadImageCloudinary(image);
+
+        const user = await UserModel.findByIdAndUpdate(userId,{
+            avatar:upload.url
+        })
+
+
+        return res.status(200).json({
+            message:"Image uploaded successfully",
+            error:false,
+            sucess:true,
+            data:{
+                _id: userId,
+                avatar:upload.url
+            }
+        })
+
+        // console.log(image)
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message || error,
+            error:true,
+            sucess:false
+        })
+    }
+}
+//Cloudinary image upload controller ends here
+
