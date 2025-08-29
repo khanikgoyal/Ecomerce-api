@@ -234,3 +234,36 @@ export async function uploadAvatar(req, res){
 }
 //Cloudinary image upload controller ends here
 
+//update user details controller starts here
+export async function updateUserDetails(req, res){
+    try {
+        const userId = req.userId;
+        const {name, email, mobile, password} = req.body;
+
+        if(password){
+            const salt = await bcrypt.genSalt(10);
+            hashedPassword = await bcrypt.hash(password, salt);
+        }
+        
+        const updateUser = await UserModel.updateOne({_id:userId}, {
+            ...(name && {name:name}),
+            ...(email && {email:email}),
+            ...(mobile && {mobile:mobile}),
+            ...(password && {password:hashedPassword}),
+        })
+
+        return res.status(200).json({
+            message:"User details updated successfully",
+            error:false,
+            sucess:true,
+            data:updateUser      
+        })
+        
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message || error,
+            error:true,
+            sucess:false
+        })
+    }
+}
