@@ -22,6 +22,10 @@ const addressSchema = new mongoose.Schema({
     mobile:{
         type:String,
         default : "",
+    },
+    status:{
+        type:Boolean,
+        default:true,
     }
 },{
     timestamps:true
